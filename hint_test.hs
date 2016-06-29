@@ -11,14 +11,15 @@ mai2 = do c <- runInterpreter $ compareFunctions "ExampleCode" "ExampleTemplate"
 
 
 main :: IO()
-main = do r <- runInterpreter $ getExportList "ExampleTest"
+main = do r <- runInterpreter $ getTestList "ExampleTest"
           case r of 
             Left err -> putStrLn $ show err
-            Right a -> putStrLn $ show $ map name a
+            Right _ -> putStrLn $ show r
 
 getTestList :: String -> Interpreter [ModuleElem]
 getTestList m = do
     l <- getExportList m
+    setTopLevelModules [m]
     filterTest l
 
 filterTest :: [ModuleElem] -> Interpreter [ModuleElem]
@@ -27,8 +28,10 @@ filterTest (x:xs) = do
     n <- typeOf $ name x 
     ys <- filterTest xs
     case n of
-        "Test" -> return (x:ys)
-        _ ->  return ys
+       "Test" -> return (x:ys)
+       _ ->  return ys
+
+    
 
 getExportList :: String -> Interpreter [ModuleElem]
 getExportList m = do
