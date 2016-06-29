@@ -11,7 +11,7 @@ main = do r <- runInterpreter $ compareFunctions "ExampleTemplate" "ExampleCode"
             Left err -> printInterpreterError err
             Right () -> putStrLn "Done"
 
-
+asf asdf 
 subset:: Eq a => [a] -> [a] -> Bool
 subset [] y = True
 subset (x:xs) y = (subset xs y) && (foldr (||) False $ map (\v -> v == x) y )
