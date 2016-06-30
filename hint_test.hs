@@ -3,7 +3,7 @@ import Language.Haskell.Interpreter
 import Test.HUnit
 
 mai2 :: IO String
-mai2 = do c <- runInterpreter $ compareFunctions "ExampleCode" "ExampleTemplate"
+mai2 = do c <- runInterpreter $ compareModuleFunctions "ExampleCode" "ExampleTemplate"
           case c of
             Left err -> return "Error: "
             Right True -> return "Done Right"
@@ -20,15 +20,15 @@ getTestList :: String -> Interpreter [ModuleElem]
 getTestList m = do
     l <- getExportList m
     setTopLevelModules [m]
-    filterTest l
+    filterModule l "Test"
 
-filterTest :: [ModuleElem] -> Interpreter [ModuleElem]
-filterTest [] = return []
-filterTest (x:xs) = do
+filterModule :: [ModuleElem] -> String -> Interpreter [ModuleElem]
+filterModule [] _ = return []
+filterModule (x:xs) elemType = do
     n <- typeOf $ name x 
-    ys <- filterTest xs
+    ys <- filterModule xs elemType
     case n of
-       "Test" -> return (x:ys)
+       elemType -> return (x:ys)
        _ ->  return ys
 
     
@@ -43,8 +43,8 @@ subset [] y = True
 subset (x:xs) y = (subset xs y) && (foldr (||) False $ map (\v -> v == x) y )
 
 
-compareFunctions :: String -> String -> Interpreter Bool
-compareFunctions template code = do
+compareModuleFunctions :: String -> String -> Interpreter Bool
+compareModuleFunctions template code = do
     expected <- getExportList template
     found <- getExportList code
     return $ subset expected found
@@ -53,8 +53,8 @@ compareFunctions template code = do
 say :: String -> Interpreter ()
 say = liftIO . putStrLn
 
-checkModule :: String -> Interpreter Bool
-checkModule name = do 
+isModuleCompilable :: String -> Interpreter Bool
+isModuleCompilable name = do 
     r <- runInterpreter $ loadModules [name]
     case r of 
         Left err -> return False
